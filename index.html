@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#4f46e5"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Bank Planner"><link rel="apple-touch-icon" href="icon-192.png"><title>NICL Generalist Planner</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1b1f2a;--mu:#6b7280;--ac:#4f46e5;--ok:#16a34a;--bd:#e5e7eb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1117;--card:#1a1d27;--tx:#eceef4;--mu:#9aa1b2;--ac:#818cf8;--ok:#4ade80;--bd:#2a2e3b}}
+:root[data-theme="dark"]{--bg:#0f1117;--card:#1a1d27;--tx:#eceef4;--mu:#9aa1b2;--ac:#818cf8;--ok:#4ade80;--bd:#2a2e3b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.4 system-ui,-apple-system,Segoe UI,sans-serif}
+.w{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 2px}.sub{color:var(--mu);font-size:13px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.bar{height:8px;background:var(--bd);border-radius:6px;overflow:hidden;margin:6px 0 10px}.bar i{display:block;height:100%;background:var(--ac);width:0;transition:width .3s}
+.row{display:flex;justify-content:space-between;font-size:13px;color:var(--mu)}
+.tabs{display:flex;gap:6px;margin-bottom:12px}.tabs button{flex:1;padding:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font-size:14px}
+.tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.nav{display:flex;align-items:center;gap:8px;margin-bottom:10px}.nav button{width:40px;height:40px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:18px}
+.nav div{flex:1;text-align:center}.nav b{font-size:18px}.tag{font-size:12px;color:var(--ac)}
+.t{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bd)}.t:last-child{border:0}
+.t input{width:22px;height:22px;margin-top:1px;accent-color:var(--ok);flex:none}
+.t.d span{text-decoration:line-through;color:var(--mu)}
+.goal{font-size:13px;background:rgba(79,70,229,.1);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.grid button{aspect-ratio:1;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:6px;font-size:11px;padding:0}
+.grid .p{background:var(--ac);color:#fff;border-color:var(--ac);opacity:.55}.grid .f{background:var(--ok);color:#fff;border-color:var(--ok)}.grid .c{outline:2px solid var(--tx)}
+.mini{font-size:12px;color:var(--mu);margin:6px 0}
+.reset{background:none;border:0;color:var(--mu);font-size:12px;text-decoration:underline;margin-top:8px}
+input[type=date]{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:6px}
+textarea{width:100%;min-height:80px;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px;font:14px/1.4 inherit;font-family:inherit}.prev{font-size:12px;color:var(--mu);white-space:pre-wrap;margin-top:6px}</style></head><body><div class="w">
+<h1>Bank Exam Planner</h1>
+<div class="sub">NICL Generalist · IBPS RRB PO · RRB Clerk · Oct 10 → Jan 30</div>
+<div class="card"><div id="ex"></div><div class="mini">RRB dates are from IBPS's tentative calendar. Confirm on ibps.in.</div></div>
+<div class="card"><div class="row"><span>To NICL Prelims (Oct 10 – Nov 17)</span><span id="pp">0%</span></div><div class="bar"><i id="pb"></i></div>
+<div class="row"><span>NICL Mains + RRB PO (Nov 18 – Dec 22)</span><span id="mp">0%</span></div><div class="bar"><i id="mb"></i></div>
+<div class="row"><span>RRB Clerk Mains (Dec 23 – Jan 30)</span><span id="cp">0%</span></div><div class="bar"><i id="cb"></i></div></div>
+<div class="tabs"><button id="t0">Today</button><button id="t1">Prelims</button><button id="t2">Mains</button><button id="t3">Clerk</button></div>
+<div class="card"><div class="nav"><button id="pv">‹</button><div><b id="dn"></b><div class="tag" id="ph"></div></div><button id="nx">›</button></div>
+<div class="goal" id="gl"></div><div id="ls"></div></div>
+<div class="card"><b style="font-size:15px">📒 Error log · today</b><div class="mini">Write mistakes: topic, why, fix</div><textarea id="nt" placeholder="e.g. Puzzle set 3: missed floor-based clue → read all clues first"></textarea><div class="prev" id="pe"></div></div>
+<div class="card"><div class="mini">All 113 days (green = complete)</div><div class="grid" id="g"></div></div>
+<button class="reset" id="rs">Reset all progress</button>
+</div>
+<script>
+const AR=["Percentage","Ratio & proportion","Average & ages","Profit & loss","SI & CI","Time & work","Speed, time & distance","Mixtures & alligation","Pipes & boats","Number system"];
+const GR=["Subject-verb agreement","Tenses","Articles & determiners","Prepositions","Pronouns & adjectives","Modifiers & parallelism","Conjunctions & connectors","Common error patterns"];
+const CA=["Newspaper + daily news","Banking & economy","National & international","Appointments, awards, sports","Govt schemes & policies","Science, tech & summits","Weekly revision + 20 MCQs"];
+const CP=["Fundamentals & generations","Hardware & memory","Software types","MS Word & Excel shortcuts","MS PowerPoint & Access","Operating systems","Networking basics","Internet & email","Cyber security","Databases & DBMS","Number systems & logic gates","Programming languages & flowcharts","Abbreviations & full forms","Emerging tech (AI, cloud, blockchain)","Previous year questions"];
+const IN=["Insurance basics & principles","Life insurance products","Non-life insurance classes","Health insurance & TPA","Motor insurance","Fire & marine insurance","IRDAI & regulations","Reinsurance & key terms","Govt schemes (PMJJBY, PMSBY, PMFBY, Ayushman Bharat)","NICL profile & history","GIC & public sector insurers","Claims & underwriting","Bancassurance & distribution","Insurance Acts & reforms","Insurance news of the month"];
+const ES=["Banking & digital payments","Insurance penetration in India","AI & jobs","Financial inclusion","Climate & green finance","Women's empowerment","Rural economy & RRBs","Cyber fraud & security"];
+const IV=["Self-introduction","Why insurance / NICL?","Banking & insurance basics","Current affairs opinions","Hobbies, DAF & profile","HR & situational questions","Why RRB / rural banking","Strengths, weaknesses, failure"];
+const S0=new Date(2026,9,10),F=new Intl.DateTimeFormat("en-IN",{day:"numeric",month:"short"});
+const dt=d=>{const x=new Date(S0);x.setDate(x.getDate()+d-1);return x};
+const SP="➗ Speed math & tables · 20 min (write & test)",SY="🧩 Syllogism / Inequality · 10 min (Guidely)",VW="🗣️ Vocal warm-up: read aloud · 10 min",EL="📒 Error log review: record today's mistakes, review older ones";
+function core(d,mock){return [SP,
+"➗ Simplification & Approximation · 20 Q, 40 min (Guidely, topic-wise)",
+"➗ Arithmetic word problems: "+AR[d%10]+" · 15–20 Q, 40 min (Guidely, topic-wise)",
+"📊 Data Interpretation (Mains level) · 5 Q (Telegram channels)",SY,
+"🧩 Puzzle sets · 4–5 sets, 40 min (Guidely / Telegram)",
+"🧩 Algorithmic logic · 40 min (source: to find)",
+"🧩 Misc: input-output, critical logic · 30 min (source: to find)",VW,
+"📖 RC · 2–3 passages, 40 min (Guidely / Telegram)",
+"📖 Grammar / syntax errors: "+GR[d%8]+" · 20–30 Q (start from basics)",
+"📰 Current Affairs & Banking Awareness · 1 hr: "+CA[d%7],
+"📝 "+mock,EL]}
+function dly(d,c,i){return ["💻 Computer: "+CP[d%15]+" · "+c+" min, 15 MCQs","🛡️ Insurance: "+IN[d%15]+" · "+i+" min, 15 MCQs"]}
+function di(d,desc){const t=[];
+ if(desc)t.push("✍️ Descriptive (typed): "+["Essay","Précis","Comprehension"][d%3]+(d%3==0?" on "+ES[d%8]:"")+" · 25 min (watch typing speed)");
+ t.push("🎤 Interview: "+IV[d%8]+" · 10 min (speak aloud)");
+ if(d%7==0){if(desc)t.push("✍️ Weekly full descriptive: Essay + Précis 20 min, Comprehension 10 min (typed)");t.push("🎤 Weekly mock interview (record, review answers)")}
+ return t}
+function light(d,extra){return ["Revise short notes · 2 hrs max",SP,SY,VW,"📰 Current Affairs & Banking Awareness · 30 min","⌨️ Typing / descriptive light practice · 20 min","🎤 Interview: "+IV[d%8]+" · 10 min"].concat(extra,["Pack admit card, photo ID, pen","Sleep early"])}
+function exam(l){return ["Reach centre early with admit card + ID"].concat(l,["After exam: rest, short error-log note"])}
+const D={};
+function add(d,p,goal,t){D[d]={p,goal,t}}
+const LT={38:"NICL Prelims tomorrow. Revise only",42:"RRB PO Prelims tomorrow. Revise only",57:"RRB Clerk Prelims soon. Light revision",63:"RRB Clerk Prelims soon. Light revision",71:"RRB PO Mains tomorrow. Light revision",73:"NICL Mains tomorrow. Light revision",112:"RRB Clerk Mains tomorrow. Light revision"};
+for(let d=1;d<=113;d++){
+ const k=d-45;let m,t,p,g;
+ if(d==39)add(d,"EXAM DAY · NICL Prelims","Nov 17 · Target 85+. 20 min per section",exam(["Reasoning & Quant first, 95% accuracy","20 min per section strictly"]));
+ else if(d==43||d==44)add(d,"EXAM DAY · RRB PO Prelims","Nov "+(d-22)+" · Attend if your slot is today; else light revision",exam(["Reasoning + Quant, 80 marks, 45 min","Attempt only sure questions first"]).concat(d==43?[]:["Start reviewing NICL Mains syllabus"]));
+ else if(d==58||d==64||d==65)add(d,"EXAM DAY · RRB Clerk Prelims","Dec "+(d-52)+" · Attend if your slot is today; else normal day",exam(["Reasoning + Numerical Ability, 80 marks, 45 min"]));
+ else if(d==72)add(d,"EXAM DAY · RRB PO Mains","Dec 20 · Attend if you cleared Prelims; else full-mock day",exam(["Computer & GA first, then Reasoning, Quant, English"]));
+ else if(d==74)add(d,"EXAM DAY · NICL Mains","Dec 22 · Objective 3 hrs, then typed Descriptive",["Reach centre early with admit card + ID","Check all keyboard keys before starting","Computer + GA first (zero calculation)","Descriptive: Essay & Précis 20 min, Comprehension 10 min"]);
+ else if(d==113)add(d,"EXAM DAY · RRB Clerk Mains","Jan 30 · 200 marks, 2 hrs",exam(["Computer & GA first, then Reasoning, Numerical Ability, English"]));
+ else if(LT[d])add(d,"Light revision day",LT[d],light(d,[]));
+ else if(d<=12)add(d,"NICL Prelims · Foundation","Learn concepts; accuracy before speed. Also builds RRB base",core(d,"Mock · 1 hr (Guidely): sectionals on today's topics").concat(dly(d,20,20),di(d,1)));
+ else if(d<=26)add(d,"NICL Prelims · Speed","Attempt 30+ in Reasoning & Quant at 95% accuracy",core(d,"Mock · 1 hr (Guidely): timed sectionals, 30+ attempts").concat(dly(d,20,20),di(d,1)));
+ else if(d<=37)add(d,"NICL Prelims · Mocks","Full 60-min mock (20/20/20), target 85+. Alternate days: RRB PO Prelims pattern",core(d,d%2?"Full NICL Prelims mock · 1 hr (Guidely): 20/20/20":"RRB PO Prelims mock · Reasoning + Quant, 40 Q each, 45 min").concat(dly(d,20,20),di(d,1)));
+ else if(d<=42)add(d,"RRB PO Prelims push","Reasoning + Quant speed. Rest of routine stays",core(d,"RRB PO Prelims mock · Reasoning + Quant, 45 min").concat(dly(d,20,20),di(d,1)));
+ else if(d<=58)add(d,"NICL Mains + RRB PO Mains","NICL Mains: need ~70/150 from Reasoning, Quant, English. Computer + GA aim 80/100",core(d,d%2?"NICL Mains sectional · 50 Q in 40 min (Guidely)":"RRB PO Mains sectional · 40 Q in 30 min").concat(dly(d,30,30),di(d,1)));
+ else if(d<=65)add(d,"Descriptive intensive + sections","Essay + Précis in 20 min, Comprehension in 10 min, typed. Typing speed is the silent killer",core(d,d%2?"NICL Mains sectional · 50 Q in 40 min (Guidely)":"RRB PO Mains sectional · 40 Q in 30 min").concat(dly(d,30,30),di(d,1),["⌨️ Extra typing speed drill · 15 min","✍️ Full descriptive set: Essay + Précis + Comprehension, timed"]));
+ else if(d<=70)add(d,"Full mocks + interview","NICL Mains target 155–160/250 (cut-off ~141). Interview = 20% weight",[d%2?"📝 Full NICL Mains mock (Guidely): 3-hr objective + typed descriptive":"📝 Full RRB PO Mains mock: 2 hrs, 200 marks","Deep analysis of the mock: errors, time lost",SP,SY,VW,"📰 Current Affairs & Banking Awareness · 1 hr: "+CA[d%7]].concat(dly(d,30,30),di(d,1),[EL]));
+ else if(d==75)add(d,"After NICL Mains · Reset","Recovery day. Review the paper, update error log, plan RRB Clerk Mains",core(d,"RRB Clerk Mains sectional · 40 Q in 30 min").concat(dly(d,40,15),di(d,0)));
+ else add(d,"RRB Clerk Mains","200 marks, 2 hrs. Computer is 40 marks. Keep NICL interview prep alive",core(d,d%4==0?"Full RRB Clerk Mains mock · 2 hrs, 200 marks":"RRB Clerk Mains sectional · 40 Q in 30 min").concat(["💻 Computer sectional · 40 Q, 25 min"],dly(d,40,15),di(d,0)));
+}
+const EX=[["NICL Prelims",new Date(2026,10,17)],["RRB PO Prelims",new Date(2026,10,21)],["RRB Clerk Prelims",new Date(2026,11,6)],["RRB PO Mains",new Date(2026,11,20)],["NICL Mains",new Date(2026,11,22)],["RRB Clerk Mains",new Date(2027,0,30)]];
+const $=id=>document.getElementById(id);
+let S={cur:1,done:{},notes:{}};
+try{const x=localStorage.getItem("nicl4");if(x)S=Object.assign(S,JSON.parse(x))}catch(e){}
+const save=()=>{try{localStorage.setItem("nicl4",JSON.stringify(S))}catch(e){}};
+const cnt=d=>D[d].t.filter((_,i)=>S.done[d+"-"+i]).length;
+const fin=d=>cnt(d)===D[d].t.length;
+const today=()=>{const n=Math.floor((new Date().setHours(0,0,0,0)-S0)/864e5)+1;return Math.min(113,Math.max(1,n))};
+function render(){
+ const d=S.cur,x=D[d];
+ $("dn").textContent="Day "+d+" · "+F.format(dt(d));$("ph").textContent=x.p;
+ $("gl").textContent="🎯 "+x.goal+"  ("+cnt(d)+"/"+x.t.length+" done)";
+ $("ls").innerHTML=x.t.map((t,i)=>{const k=d+"-"+i,c=S.done[k];return `<label class="t ${c?"d":""}"><input type="checkbox" data-k="${k}" ${c?"checked":""}><span>${t}</span></label>`}).join("");
+ $("nt").value=S.notes[d]||"";
+ const olds=Object.keys(S.notes).map(Number).filter(n=>n<d&&S.notes[n]).slice(-2);
+ $("pe").textContent=olds.length?olds.map(n=>"Day "+n+" errors:\n"+S.notes[n]).join("\n\n"):"";
+ const td=today();
+ $("t0").className=d==td?"on":"";$("t1").className=d<=39&&d!=td?"on":"";$("t2").className=d>39&&d<=74&&d!=td?"on":"";$("t3").className=d>74&&d!=td?"on":"";
+ const P=[0,0,0],T=[0,0,0];
+ for(let i=1;i<=113;i++){const j=i<=39?0:i<=74?1:2;P[j]+=cnt(i);T[j]+=D[i].t.length}
+ const pc=P.map((v,j)=>Math.round(v/T[j]*100));
+ $("pp").textContent=pc[0]+"%";$("pb").style.width=pc[0]+"%";$("mp").textContent=pc[1]+"%";$("mb").style.width=pc[1]+"%";$("cp").textContent=pc[2]+"%";$("cb").style.width=pc[2]+"%";
+ const nw=new Date().setHours(0,0,0,0);
+ $("ex").innerHTML=EX.map(e=>{const n=Math.round((e[1]-nw)/864e5);return `<div class="row" style="padding:3px 0"><span>${e[0]}</span><span>${F.format(e[1])} · ${n>=0?n+" days":"done"}</span></div>`}).join("");
+ $("g").innerHTML=Array.from({length:113},(_,i)=>{const n=i+1,c=cnt(n);return `<button data-d="${n}" class="${fin(n)?"f":c?"p":""} ${n===d?"c":""}">${n}</button>`}).join("");
+}
+$("ls").onchange=e=>{const k=e.target.dataset.k;if(!k)return;S.done[k]=e.target.checked;save();render()};
+$("nt").oninput=e=>{S.notes[S.cur]=e.target.value;save()};
+$("g").onclick=e=>{const n=e.target.dataset.d;if(n){S.cur=+n;save();render()}};
+$("pv").onclick=()=>{if(S.cur>1){S.cur--;save();render()}};
+$("nx").onclick=()=>{if(S.cur<113){S.cur++;save();render()}};
+$("t0").onclick=()=>{S.cur=today();save();render()};
+$("t1").onclick=()=>{S.cur=1;save();render()};
+$("t2").onclick=()=>{S.cur=40;save();render()};
+$("t3").onclick=()=>{S.cur=75;save();render()};
+$("rs").onclick=()=>{if(confirm("Reset all progress and error logs?")){S={cur:today(),done:{},notes:{}};save();render()}};
+S.cur=today();render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
